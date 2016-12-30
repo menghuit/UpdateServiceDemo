@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AActivity "
+        android:id="@+id/bind"
+        android:layout_marginBottom="42dp"
+        android:layout_above="@+id/to_next"
+        android:layout_alignLeft="@+id/ubbind"
+        android:layout_alignStart="@+id/ubbind" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="to B"
+        android:id="@+id/to_next"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/bind"
+        android:layout_alignStart="@+id/bind" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ubbind"
+        android:id="@+id/ubbind"
+        android:layout_below="@+id/to_next"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="57dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Destroy Service"
+        android:id="@+id/destroyService"
+        android:layout_below="@+id/ubbind"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="27dp" />
+
+
+</RelativeLayout>
