@@ -15,43 +15,52 @@ import android.widget.Button;
 
 import com.zd.updateservice.CheckUpdateListener;
 import com.zd.updateservice.CheckUpdateResult;
-import com.zd.updateservice.UpdateClient;
+import com.zd.updateservice.ServiceConnHelper;
 import com.zd.updateservice.UpdateServiceImpl;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class BActivity extends AppCompatActivity {
+public class AActivityDup extends AppCompatActivity {
 
     @BindView(R.id.start)
-    Button startBtn;
+    Button bind;
     @BindView(R.id.to_next)
     Button bToB;
-    Button bToA;
 
     CheckUpdateListener<CheckUpdateResult> listener = new CheckUpdateListener<CheckUpdateResult>() {
         @Override
         public boolean onCheckResult(CheckUpdateResult result) {
-            Log.e("TAGA", BActivity.this.getClass().getSimpleName() + " " + (result == null ? "null" : result.toString()));
-            AlertDialog.Builder customBuilder = new AlertDialog.Builder(BActivity.this);
-            customBuilder.setTitle("Btitle");
-            customBuilder.setMessage("Bmessage " + result.toString());
-            customBuilder.setNegativeButton("Bcancel", null);
+            Log.e("TAGA", AActivityDup.this.getClass().getSimpleName() + " " + (result == null ? "null" : result.toString()));
+            bind.setText(result.toString());
+
+            AlertDialog.Builder customBuilder = new AlertDialog.Builder(AActivityDup.this);
+            customBuilder.setTitle("Title");
+            customBuilder.setMessage("message");
+            customBuilder.setNegativeButton("cancel", null);
             Dialog dialog = customBuilder.create();
             dialog.show();
+
             return true;
         }
     };
-    UpdateClient client = new UpdateClient(BActivity.this, UpdateServiceImpl.class);
+    ServiceConnHelper scm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_a);
-        getSupportActionBar().setTitle("B-Activity");
         ButterKnife.bind(this);
-        bToA.setText("to A");
+        bind.setText(this.getClass().getSimpleName()+ "startBtn");
+
+        scm = new ServiceConnHelper.Builder()
+                .service(UpdateServiceImpl.class)
+                .serviceConnection(conn)
+                .flags(Context.BIND_AUTO_CREATE)
+                .build(this);
+
+        Log.e("TAGA", "activity onCreate");
     }
 
     @OnClick({R.id.start, R.id.to_next, R.id.stop, R.id.destroyService})
@@ -59,22 +68,33 @@ public class BActivity extends AppCompatActivity {
         switch (v.getId()){
             case R.id.start:
                 LogUtils.e(" TAGA ");
-                client.start();
-                client.registerCheckListener(listener);
+                scm.bindToService();
                 break;
             case R.id.to_next:
-                Intent itB = new Intent(this, AActivity.class);
-                itB.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                Intent itB = new Intent(this, BActivity.class);
                 startActivity(itB);
                 break;
             case R.id.stop:
-                client.stop();
+                scm.unbindFromService();
                 break;
             case R.id.destroyService:
-                client.requestCheck();
+                stopService(new Intent(this, UpdateServiceImpl.class));
                 break;
         }
     }
+
+    ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+//            mBinder = (UpdateServiceImpl.UpdateBinder) service;
+//            mBinder.registerUpdateListener(listener);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+//            mBinder.unregisterUpdateListener(listener);
+        }
+    };
 
     @Override
     protected void onDestroy() {

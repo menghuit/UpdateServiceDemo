@@ -7,39 +7,36 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="AActivity "
-        android:id="@+id/bind"
-        android:layout_marginBottom="42dp"
-        android:layout_above="@+id/to_next"
-        android:layout_alignLeft="@+id/ubbind"
-        android:layout_alignStart="@+id/ubbind" />
+        android:text="start"
+        android:id="@+id/start"
+        android:layout_marginBottom="14dp"
+        android:layout_above="@+id/stop"
+        android:layout_centerHorizontal="true"/>
 
     <Button
+        android:id="@+id/stop"
+        android:text="stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="to B"
-        android:id="@+id/to_next"
         android:layout_centerVertical="true"
-        android:layout_alignLeft="@+id/bind"
-        android:layout_alignStart="@+id/bind" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ubbind"
-        android:id="@+id/ubbind"
-        android:layout_below="@+id/to_next"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="57dp" />
+        android:layout_centerHorizontal="true"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Destroy Service"
         android:id="@+id/destroyService"
-        android:layout_below="@+id/ubbind"
+        android:layout_below="@+id/stop"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="27dp" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="to B"
+        android:id="@+id/to_next"
+        android:layout_below="@+id/destroyService"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="17dp" />
 
 </RelativeLayout>

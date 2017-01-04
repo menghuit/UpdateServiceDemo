@@ -3,6 +3,8 @@ package com.zd.updateservice;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
@@ -18,7 +20,7 @@ public class Dispatcher extends Thread {
     private final String TAG = getClass().getSimpleName();
 
     private boolean isTerminated = false;
-    private final Stack<CheckUpdateListener> candidates = new Stack<>();
+    private final Stack<Messenger> mClients = new Stack<>();
     private Connection mConnection;
     private Poster poster;
 
@@ -40,7 +42,7 @@ public class Dispatcher extends Thread {
         while (!isTerminated) {
             Log.e("TAGA", "dispatcher while run");
             synchronized (this) {
-                if (candidates.isEmpty() || null == mConnection || null == mConnection.getResult()) {
+                if (mClients.isEmpty() || null == mConnection || null == mConnection.getResult()) {
                     Log.d(TAG, "Wait,this stack is empty or no result");
                     notifyAllWithSyncBlock();
                     waitWithSyncBlock();
@@ -48,42 +50,52 @@ public class Dispatcher extends Thread {
                 }
             }
 
-            Log.e("TAGA", "run complete pre " + candidates.size());
-            final CheckUpdateListener lis = candidates.pop();
+            Log.e("TAGA", "run complete pre " + mClients.size());
+            final Messenger client = mClients.pop();
             final Object result = mConnection.getResult();
-            poster.post(new Runnable() {
-                @Override
-                public void run() {
-                    // on main thread
-                    if (lis != null && mConnection != null && lis.onCheckResult(result)) {
-                        // 如果目标消费掉了Result,就通知回调
-                        mConnection.onConsumed();
-                    } else {
-                        notifyAllWithSyncBlock();
-                    }
+//            poster.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    // on main thread
+//                    if (client != null && mConnection != null /*&& client.onCheckResult(result)*/) {
+//                        // 如果目标消费掉了Result,就通知回调
+//                        mConnection.onConsumed();
+//                    } else {
+//                        notifyAllWithSyncBlock();
+//                    }
+//                }
+//            });
+            if (client != null && mConnection != null) {
+                try {
+                    Message msg = Message.obtain(null, UpdateService.MSG_CHECK_RESULT);
+                    msg.obj = result;
+                    client.send(msg);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
-            });
-            waitWithSyncBlock();
-            Log.e("TAGA", "run complete " + lis + "," + candidates.size());
+            } else {
+                notifyAllWithSyncBlock();
+            }
+            Log.e("TAGA", "run complete " + client + "," + mClients.size());
         }
     }
 
-    public void enqueue(CheckUpdateListener listener) {
-        if (null == listener) {
+    public void enqueue(Messenger client) {
+        if (null == client) {
             return;
         }
-        candidates.push(listener);
+        mClients.push(client);
         notifyAllWithSyncBlock();
-        Log.e("TAGA", "enqueue " + listener + "," + candidates.size());
+        Log.e("TAGA", "enqueue " + client + "," + mClients.size());
         Log.e("TAGA", "enqueue " + getState());
     }
 
-    public void remove(CheckUpdateListener listener) {
-        boolean foundIt = candidates.removeElement(listener);
+    public void remove(Messenger client) {
+        boolean foundIt = mClients.remove(client);
         if (!foundIt) {
             Log.d(TAG, "When removing, Target was not found");
         }
-        Log.e("TAGA", "remove " + listener + "," + candidates.size());
+        Log.e("TAGA", "remove " + client + "," + mClients.size());
     }
 
     /**
@@ -92,8 +104,8 @@ public class Dispatcher extends Thread {
     public void terminate() {
         isTerminated = true;
         mConnection = null;
-        if (!candidates.isEmpty()) {
-            candidates.clear();
+        if (!mClients.isEmpty()) {
+            mClients.clear();
         }
         poster = null;
         notifyAllWithSyncBlock();
